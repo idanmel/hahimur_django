@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.views.decorators.http import require_safe
 
 
 def get_user(request_token):
@@ -7,6 +8,7 @@ def get_user(request_token):
     return None
 
 
+@require_safe
 def predictions(request, uid=1):
     request_token = request.GET.get('token')
     if not request_token:
