@@ -9,9 +9,17 @@ class PredictionsViewTests(TestCase):
         response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions")
         self.assertEqual(response.status_code, 401)
 
-    def test_bad_token(self):
+    def test_invalid_token(self):
         """
-        A request to a tournament without a bad token, returns 403
+        A request to a tournament with an invalid token, returns 403
         """
         response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions?token=asd")
         self.assertEqual(response.status_code, 403)
+
+    def test_valid_token(self):
+        """
+        A request to a tournament with a valid token, returns 200
+        """
+        response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions?token=good_token")
+        self.assertEqual(response.status_code, 200)
+

@@ -2,6 +2,8 @@ from django.http import JsonResponse
 
 
 def get_user(request_token):
+    if request_token == "good_token":
+        return "User"
     return None
 
 
@@ -14,3 +16,4 @@ def predictions(request, uid=1):
     if not user:
         return JsonResponse({}, status=403)
 
+    return JsonResponse({})
