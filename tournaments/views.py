@@ -18,4 +18,4 @@ def predictions(request, uid=1):
     if not user:
         return JsonResponse({}, status=403)
 
-    return JsonResponse({})
+    return JsonResponse({"predictions": []})

@@ -5,6 +5,7 @@ import sys
 from dotenv import load_dotenv
 load_dotenv()
 
+
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hahimur_django.settings')
     try:
