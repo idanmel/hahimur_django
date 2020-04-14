@@ -3,7 +3,8 @@ from django.test import TestCase
 
 class PredictionsViewTests(TestCase):
     """
-    Testing the predictions URL
+    Testing the predictions URL.
+    We are specifying the URL in the tests, because this guarantees usability to our frontend.
     """
     def test_missing_token(self):
         """
