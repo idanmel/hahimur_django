@@ -1,21 +1,34 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
+from .models import Token
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.views import View
 
 
 def get_user(request_token):
-    if request_token == "good_token":
-        return "User"
-    return None
+    return Token.objects.get(token=request_token).friend
 
 
-@require_http_methods(["GET", "POST"])
-def predictions(request):
-    request_token = request.GET.get('token')
-    if not request_token:
-        return JsonResponse({}, status=401)
+class PredictionsView(View):
+    def get(self, request):
+        request_token = request.GET.get('token')
+        if not request_token:
+            return JsonResponse({}, status=401)
 
-    user = get_user(request_token)
-    if not user:
-        return JsonResponse({}, status=403)
+        try:
+            user = get_user(request_token)
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            return JsonResponse({}, status=403)
 
-    return JsonResponse({"predictions": []})
+        return JsonResponse({"predictions": []})
+
+    def post(self, request):
+        request_token = request.GET.get('token')
+        if not request_token:
+            return JsonResponse({}, status=401)
+
+        try:
+            user = get_user(request_token)
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            return JsonResponse({}, status=403)
+
+        return JsonResponse({"predictions": []})

@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
+from .models import Token
 
 
 class PredictionsViewTests(TestCase):
@@ -24,7 +26,9 @@ class PredictionsViewTests(TestCase):
         """
         A request to a tournament with a valid token returns 200
         """
-        response = self.client.get("http://127.0.0.1:8000/tournaments/predictions?token=good_token")
+        test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
+        token = Token.objects.create(token="vibrant-modric", friend=test_user)
+        response = self.client.get("http://127.0.0.1:8000/tournaments/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
         self.assertIn("predictions", response.json())
         self.assertIsInstance(response.json()["predictions"], list)
@@ -33,5 +37,8 @@ class PredictionsViewTests(TestCase):
         """
         A post request returns 200
         """
-        response = self.client.post("http://127.0.0.1:8000/tournaments/predictions?token=good_token")
+        test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
+        token = Token.objects.create(token="vibrant-modric", friend=test_user)
+        response = self.client.post("http://127.0.0.1:8000/tournaments/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
+        # self.assertEqual(response.json(), {"user": "test"})
