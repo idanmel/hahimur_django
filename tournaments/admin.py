@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Tournament, GroupMatch, KnockOutMatch, GroupMatchPrediction, KnockOutMatchPrediction
+from .models import Tournament, GroupMatch, KnockOutMatch, GroupMatchPrediction, KnockOutMatchPrediction, Token
 
 admin.site.register([
     Tournament,
@@ -8,4 +8,5 @@ admin.site.register([
     KnockOutMatch,
     GroupMatchPrediction,
     KnockOutMatchPrediction,
+    Token
 ])

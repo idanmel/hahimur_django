@@ -19,6 +19,9 @@ class GroupMatch(models.Model):
     def __str__(self):
         return f"{self.match_number}. {self.home_score} - {self.away_score}"
 
+    class Meta:
+        verbose_name_plural = "Group matches"
+
 
 class KnockOutMatch(models.Model):
     """Only save matches that were already played!"""
@@ -30,6 +33,9 @@ class KnockOutMatch(models.Model):
 
     def __str__(self):
         return f"{self.match_number}. {self.home_score} - {self.away_score} home_win: {self.home_win}"
+
+    class Meta:
+        verbose_name_plural = "Knock Out matches"
 
 
 class GroupMatchPrediction(models.Model):
@@ -55,3 +61,11 @@ class KnockOutMatchPrediction(models.Model):
     def __str__(self):
         return f"{self.friend}, {self.tournament} {self.match_number}. " \
                f"{self.home_score} - {self.away_score} home_win: {self.home_win}"
+
+
+class Token(models.Model):
+    token = models.CharField(max_length=200)
+    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.friend}: {self.token}"
