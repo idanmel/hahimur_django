@@ -27,7 +27,7 @@ class PredictionsViewTests(TestCase):
 
     def test_post_request(self):
         """
-        A post request returns 405
+        A post request returns 200
         """
-        response = self.client.post("http://127.0.0.1:8000/tournaments/1/predictions")
-        self.assertEqual(response.status_code, 405)
+        response = self.client.post("http://127.0.0.1:8000/tournaments/1/predictions?token=good_token")
+        self.assertEqual(response.status_code, 200)
