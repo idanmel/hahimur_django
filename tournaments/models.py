@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import UniqueConstraint
 
 
 class Tournament(models.Model):
@@ -48,6 +49,11 @@ class GroupMatchPrediction(models.Model):
     def __str__(self):
         return f"{self.friend}, {self.tournament} {self.match_number}. " \
                f"{self.home_score} - {self.away_score}"
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['tournament', 'friend', 'match_number'], name='unique_group_match_prediction')
+        ]
 
 
 class KnockOutMatchPrediction(models.Model):
