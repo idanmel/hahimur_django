@@ -1,8 +1,5 @@
-import json
-
 from django.http import JsonResponse
 from .models import Token, Tournament, GroupMatchPrediction, KnockOutMatchPrediction, TopScorer
-from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views import View
 
@@ -12,6 +9,23 @@ PREDICTIONS = {
     "knockout_matches": [],
     "top_scorer": "",
 }
+
+
+def serialize_group_match(ko_match):
+    return {
+        "match_number": ko_match.match_number,
+        "home_score": ko_match.home_score,
+        "away_score": ko_match.away_score,
+    }
+
+
+def serialize_knockout_match(ko_match):
+    return {
+        "match_number": ko_match.match_number,
+        "home_score": ko_match.home_score,
+        "away_score": ko_match.away_score,
+        "home_win": ko_match.home_win,
+    }
 
 
 def get_user(request_token):
@@ -30,18 +44,16 @@ class PredictionsView(View):
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             return JsonResponse({}, status=403)
         else:
-            q = GroupMatchPrediction.objects.filter(tournament=t).filter(friend=user)
-            data = serializers.serialize("json", q, fields=("match_number", "home_score", "away_score"))
-            group_matches = [d["fields"] for d in json.loads(data)]
+            group_matches = GroupMatchPrediction.objects.filter(tournament=t).filter(friend=user)
+            serialized_group_matches = [serialize_group_match(match) for match in group_matches]
 
-            q = KnockOutMatchPrediction.objects.filter(tournament=t).filter(friend=user)
-            data = serializers.serialize("json", q, fields=("match_number", "home_score", "away_score", "home_win"))
-            knockout_matches = [d["fields"] for d in json.loads(data)]
+            ko_matches = KnockOutMatchPrediction.objects.filter(tournament=t).filter(friend=user)
+            serialized_knockout_matches = [serialize_knockout_match(match) for match in ko_matches]
 
             q = TopScorer.objects.get(tournament=t, friend=user)
             output = {
-                "group_matches": group_matches,
-                "knockout_matches": knockout_matches,
+                "group_matches": serialized_group_matches,
+                "knockout_matches": serialized_knockout_matches,
                 "top_scorer": q.name,
             }
 
