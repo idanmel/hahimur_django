@@ -48,9 +48,18 @@ class PredictionsViewTests(TestCase):
 
     def test_post_request(self):
         """
-        A post request returns 200
+        A post request returns 200 and all the user predictions for a specific tournament
         """
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
         response = self.client.post("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
+
+    def test_invalid_tournament(self):
+        """
+        An invalid tournament number returns 404
+        """
+        test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
+        Token.objects.create(token="vibrant-modric", friend=test_user)
+        response = self.client.get("http://127.0.0.1:8000/tournaments/2/predictions?token=vibrant-modric")
+        self.assertEqual(response.status_code, 404)

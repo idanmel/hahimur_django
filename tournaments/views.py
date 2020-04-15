@@ -35,6 +35,11 @@ def no_token_error():
 def invalid_token():
     return JsonResponse({"error": "Invalid token"}, status=403)
 
+
+def invalid_tournament():
+    return JsonResponse({"error": "Invalid token"}, status=404)
+
+
 def get_user(request_token):
     return Token.objects.get(token=request_token).friend
 
@@ -47,9 +52,13 @@ class PredictionsView(View):
 
         try:
             user = get_user(request_token)
-            t = Tournament.objects.get(pk=uid)
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except ObjectDoesNotExist:
             return JsonResponse({"error": "Invalid token"}, status=403)
+
+        try:
+            t = Tournament.objects.get(pk=uid)
+        except ObjectDoesNotExist:
+            return invalid_tournament()
         else:
             group_matches = GroupMatchPrediction.objects.filter(tournament=t).filter(friend=user)
             serialized_group_matches = [serialize_group_match(match) for match in group_matches]
