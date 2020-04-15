@@ -4,6 +4,13 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views import View
 
 
+PREDICTIONS = {
+    "group_matches": [],
+    "knockout_matches": [],
+    "top_scorer": "",
+}
+
+
 def get_user(request_token):
     return Token.objects.get(token=request_token).friend
 
@@ -19,7 +26,7 @@ class PredictionsView(View):
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             return JsonResponse({}, status=403)
 
-        return JsonResponse({"predictions": []})
+        return JsonResponse(PREDICTIONS)
 
     def post(self, request):
         request_token = request.GET.get('token')
@@ -31,4 +38,4 @@ class PredictionsView(View):
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             return JsonResponse({}, status=403)
 
-        return JsonResponse({"predictions": []})
+        return JsonResponse(PREDICTIONS)

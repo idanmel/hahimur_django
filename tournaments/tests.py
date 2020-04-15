@@ -30,8 +30,9 @@ class PredictionsViewTests(TestCase):
         token = Token.objects.create(token="vibrant-modric", friend=test_user)
         response = self.client.get("http://127.0.0.1:8000/tournaments/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("predictions", response.json())
-        self.assertIsInstance(response.json()["predictions"], list)
+        self.assertIsInstance(response.json()["group_matches"], list)
+        self.assertIsInstance(response.json()["knockout_matches"], list)
+        self.assertIsInstance(response.json()["top_scorer"], str)
 
     def test_post_request(self):
         """
