@@ -28,6 +28,13 @@ def serialize_knockout_match(ko_match):
     }
 
 
+def no_token_error():
+    return JsonResponse({"error": "No token"}, status=401)
+
+
+def invalid_token():
+    return JsonResponse({"error": "Invalid token"}, status=403)
+
 def get_user(request_token):
     return Token.objects.get(token=request_token).friend
 
@@ -36,13 +43,13 @@ class PredictionsView(View):
     def get(self, request, uid=1):
         request_token = request.GET.get('token')
         if not request_token:
-            return JsonResponse({}, status=401)
+            return no_token_error()
 
         try:
             user = get_user(request_token)
             t = Tournament.objects.get(pk=uid)
         except (ObjectDoesNotExist, MultipleObjectsReturned):
-            return JsonResponse({}, status=403)
+            return JsonResponse({"error": "Invalid token"}, status=403)
         else:
             group_matches = GroupMatchPrediction.objects.filter(tournament=t).filter(friend=user)
             serialized_group_matches = [serialize_group_match(match) for match in group_matches]
@@ -62,11 +69,11 @@ class PredictionsView(View):
     def post(self, request, uid=1):
         request_token = request.GET.get('token')
         if not request_token:
-            return JsonResponse({}, status=401)
+            return no_token_error()
 
         try:
             user = get_user(request_token)
         except (ObjectDoesNotExist, MultipleObjectsReturned):
-            return JsonResponse({}, status=403)
+            return invalid_token()
 
         return JsonResponse(PREDICTIONS)
