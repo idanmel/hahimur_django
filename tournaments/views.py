@@ -37,7 +37,7 @@ def invalid_token():
 
 
 def invalid_tournament():
-    return JsonResponse({"error": "Invalid token"}, status=404)
+    return JsonResponse({"error": "Invalid tournament"}, status=404)
 
 
 def get_user(request_token):
