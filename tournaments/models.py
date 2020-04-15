@@ -7,7 +7,7 @@ class Tournament(models.Model):
     name = models.CharField(max_length=200)
 
     def __str__(self):
-        return self.name
+        return f"{self.pk}. {self.name}"
 
 
 class GroupMatch(models.Model):
