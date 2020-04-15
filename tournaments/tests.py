@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from .models import Token, GroupMatchPrediction, Tournament, KnockOutMatchPrediction
+from .models import Token, GroupMatchPrediction, Tournament, KnockOutMatchPrediction, TopScorer
 
 
 class PredictionsViewTests(TestCase):
@@ -33,13 +33,14 @@ class PredictionsViewTests(TestCase):
         GroupMatchPrediction.objects.create(tournament=t, friend=test_user, match_number=2, home_score=4, away_score=1)
         KnockOutMatchPrediction.objects.create(tournament=t, friend=test_user, match_number=3, home_score=0,
                                                away_score=1, home_win=False)
+        TopScorer.objects.create(tournament=t, friend=test_user, name="Ronaldo")
         output = {
             "group_matches": [
                 {"match_number": 1, "home_score": 3, "away_score": 2},
                 {"match_number": 2, "home_score": 4, "away_score": 1},
             ],
             "knockout_matches": [{"match_number": 3, "home_score": 0, "away_score": 1, "home_win": False}],
-            "top_scorer": "",
+            "top_scorer": "Ronaldo",
         }
         response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
