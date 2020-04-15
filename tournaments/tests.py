@@ -75,7 +75,6 @@ class PredictionsViewTests(TestCase):
         top_scorer_name = TopScorer.objects.get(tournament=self.t, friend=test_user).name
         self.assertEqual(top_scorer_name, "ronaldo")
 
-
     def test_invalid_tournament(self):
         """
         An invalid tournament number returns 404
@@ -84,3 +83,29 @@ class PredictionsViewTests(TestCase):
         Token.objects.create(token="valid-token", friend=test_user)
         response = self.client.get(f"http://127.0.0.1:8000/tournaments/{self.t.pk + 1}/predictions?token=valid-token")
         self.assertEqual(response.status_code, 404)
+
+    def test_post_request2(self):
+        """
+        Sending the same matches multiple times updates the matches
+        """
+        test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
+        Token.objects.create(token="vibrant-modric", friend=test_user)
+        data = {
+            "group_matches": [
+                {"match_number": 1, "home_score": 3, "away_score": 2},
+                {"match_number": 2, "home_score": 4, "away_score": 1},
+            ],
+            "knockout_matches": [{"match_number": 3, "home_score": 0, "away_score": 1, "home_win": False}],
+            "top_scorer": "Ronaldo",
+        }
+        self.client.post(f"http://127.0.0.1:8000/tournaments/{self.t.pk}/predictions?token=vibrant-modric",
+                                    data=data, content_type="application/json")
+        self.client.post(f"http://127.0.0.1:8000/tournaments/{self.t.pk}/predictions?token=vibrant-modric",
+                                    data=data, content_type="application/json")
+
+        group_match_predictions = GroupMatchPrediction.objects.filter(tournament=self.t).filter(friend=test_user)
+        ko_match_predictions = KnockOutMatchPrediction.objects.filter(tournament=self.t).filter(friend=test_user)
+        top_scorer = TopScorer.objects.filter(tournament=self.t).filter(friend=test_user)
+        self.assertEqual(len(group_match_predictions), 2)
+        self.assertEqual(len(ko_match_predictions), 1)
+        self.assertEqual(len(top_scorer), 1)

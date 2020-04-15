@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from .models import Token, Tournament, GroupMatchPrediction, KnockOutMatchPrediction, TopScorer
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views import View
+from django.db.utils import IntegrityError
 
 
 PREDICTIONS = {
@@ -110,13 +111,26 @@ class PredictionsView(View):
             return invalid_tournament()
 
         data = json.loads(request.body.decode("utf-8"))
-        group_match_predictions = [create_group_match_prediction(t, user, match) for match in data["group_matches"]]
-        GroupMatchPrediction.objects.bulk_create(group_match_predictions)
+        for group_match_prediction in data["group_matches"]:
+            GroupMatchPrediction.objects.update_or_create(
+                tournament=t,
+                friend=user,
+                match_number=group_match_prediction["match_number"],
+                home_score=group_match_prediction["home_score"],
+                away_score=group_match_prediction["away_score"],
+            )
 
-        ko_match_predictions = [create_ko_match_prediction(t, user, match) for match in data["knockout_matches"]]
-        KnockOutMatchPrediction.objects.bulk_create(ko_match_predictions)
+        for ko_match_prediction in data["knockout_matches"]:
+            KnockOutMatchPrediction.objects.update_or_create(
+                tournament=t,
+                friend=user,
+                match_number=ko_match_prediction["match_number"],
+                home_score=ko_match_prediction["home_score"],
+                away_score=ko_match_prediction["away_score"],
+                home_win=ko_match_prediction["home_win"]
+            )
 
         top_scorer = data["top_scorer"].strip().lower()
-        TopScorer(tournament=t, friend=user, name=top_scorer).save()
+        TopScorer.objects.update_or_create(tournament=t, friend=user, name=top_scorer)
 
         return JsonResponse(PREDICTIONS)
