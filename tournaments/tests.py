@@ -8,32 +8,34 @@ class PredictionsViewTests(TestCase):
     Testing the predictions URL.
     We are specifying the URL in the tests, because this guarantees usability to our frontend.
     """
+    def setUp(self):
+        self.t = Tournament.objects.create(name="Euro2020")
+
     def test_missing_token(self):
         """
         A request to a tournament without a token returns 401
         """
-        response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions")
+        response = self.client.get(f"http://127.0.0.1:8000/tournaments/{self.t.pk}/predictions")
         self.assertEqual(response.status_code, 401)
 
     def test_invalid_token(self):
         """
         A request to a tournament with an invalid token returns 403
         """
-        response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions?token=asd")
+        response = self.client.get(f"http://127.0.0.1:8000/tournaments/{self.t.pk}/predictions?token=asd")
         self.assertEqual(response.status_code, 403)
 
     def test_valid_token(self):
         """
         A get request to with a valid token returns all predictions
         """
-        t = Tournament.objects.create(name="Euro2020")
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
-        GroupMatchPrediction.objects.create(tournament=t, friend=test_user, match_number=1, home_score=3, away_score=2)
-        GroupMatchPrediction.objects.create(tournament=t, friend=test_user, match_number=2, home_score=4, away_score=1)
-        KnockOutMatchPrediction.objects.create(tournament=t, friend=test_user, match_number=3, home_score=0,
+        GroupMatchPrediction.objects.create(tournament=self.t, friend=test_user, match_number=1, home_score=3, away_score=2)
+        GroupMatchPrediction.objects.create(tournament=self.t, friend=test_user, match_number=2, home_score=4, away_score=1)
+        KnockOutMatchPrediction.objects.create(tournament=self.t, friend=test_user, match_number=3, home_score=0,
                                                away_score=1, home_win=False)
-        TopScorer.objects.create(tournament=t, friend=test_user, name="Ronaldo")
+        TopScorer.objects.create(tournament=self.t, friend=test_user, name="Ronaldo")
         output = {
             "group_matches": [
                 {"match_number": 1, "home_score": 3, "away_score": 2},
@@ -42,7 +44,7 @@ class PredictionsViewTests(TestCase):
             "knockout_matches": [{"match_number": 3, "home_score": 0, "away_score": 1, "home_win": False}],
             "top_scorer": "Ronaldo",
         }
-        response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric")
+        response = self.client.get(f"http://127.0.0.1:8000/tournaments/{self.t.pk}/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), output)
 
@@ -50,9 +52,18 @@ class PredictionsViewTests(TestCase):
         """
         A post request returns 200 and all the user predictions for a specific tournament
         """
+        t = Tournament.objects.create(name="Euro2020")
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
-        response = self.client.post("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric")
+        data = {
+            "group_matches": [
+                {"match_number": 1, "home_score": 3, "away_score": 2},
+                {"match_number": 2, "home_score": 4, "away_score": 1},
+            ],
+            "knockout_matches": [{"match_number": 3, "home_score": 0, "away_score": 1, "home_win": False}],
+            "top_scorer": "Ronaldo",
+        }
+        response = self.client.post("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric", data=data)
         self.assertEqual(response.status_code, 200)
 
     def test_invalid_tournament(self):
@@ -61,5 +72,5 @@ class PredictionsViewTests(TestCase):
         """
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
-        response = self.client.get("http://127.0.0.1:8000/tournaments/2/predictions?token=vibrant-modric")
+        response = self.client.get(f"http://127.0.0.1:8000/tournaments/{self.t.pk + 1}/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 404)
