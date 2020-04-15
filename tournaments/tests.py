@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from .models import Token, GroupMatchPrediction, Tournament
+from .models import Token, GroupMatchPrediction, Tournament, KnockOutMatchPrediction
 
 
 class PredictionsViewTests(TestCase):
@@ -24,23 +24,32 @@ class PredictionsViewTests(TestCase):
 
     def test_valid_token(self):
         """
-        A request to a tournament with a valid token returns 200
+        A get request to with a valid token returns all predictions
         """
+        t = Tournament.objects.create(name="Euro2020")
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
+        GroupMatchPrediction.objects.create(tournament=t, friend=test_user, match_number=1, home_score=3, away_score=2)
+        GroupMatchPrediction.objects.create(tournament=t, friend=test_user, match_number=2, home_score=4, away_score=1)
+        KnockOutMatchPrediction.objects.create(tournament=t, friend=test_user, match_number=3, home_score=0,
+                                               away_score=1, home_win=False)
+        output = {
+            "group_matches": [
+                {"match_number": 1, "home_score": 3, "away_score": 2},
+                {"match_number": 2, "home_score": 4, "away_score": 1},
+            ],
+            "knockout_matches": [{"match_number": 3, "home_score": 0, "away_score": 1, "home_win": False}],
+            "top_scorer": "",
+        }
         response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
-        self.assertIsInstance(response.json()["group_matches"], list)
-        self.assertIsInstance(response.json()["knockout_matches"], list)
-        self.assertIsInstance(response.json()["top_scorer"], str)
+        self.assertEqual(response.json(), output)
 
     def test_post_request(self):
         """
         A post request returns 200
         """
-        t = Tournament.objects.create(name="Euro2020")
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
         response = self.client.post("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
-        # self.assertEqual(response.json(), {"user": "test"})
