@@ -52,7 +52,6 @@ class PredictionsViewTests(TestCase):
         """
         A post request returns 200 and all the user predictions for a specific tournament
         """
-        t = Tournament.objects.create(name="Euro2020")
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
         data = {
@@ -63,14 +62,25 @@ class PredictionsViewTests(TestCase):
             "knockout_matches": [{"match_number": 3, "home_score": 0, "away_score": 1, "home_win": False}],
             "top_scorer": "Ronaldo",
         }
-        response = self.client.post("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric", data=data)
+        response = self.client.post(f"http://127.0.0.1:8000/tournaments/{self.t.pk}/predictions?token=vibrant-modric",
+                                    data=data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
+
+        group_match_predictions = GroupMatchPrediction.objects.filter(tournament=self.t).filter(friend=test_user)
+        self.assertEqual(len(group_match_predictions), 2)
+
+        ko_match_predictions = KnockOutMatchPrediction.objects.filter(tournament=self.t).filter(friend=test_user)
+        self.assertEqual(len(ko_match_predictions), 1)
+
+        top_scorer_name = TopScorer.objects.get(tournament=self.t, friend=test_user).name
+        self.assertEqual(top_scorer_name, "ronaldo")
+
 
     def test_invalid_tournament(self):
         """
         An invalid tournament number returns 404
         """
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
-        Token.objects.create(token="vibrant-modric", friend=test_user)
-        response = self.client.get(f"http://127.0.0.1:8000/tournaments/{self.t.pk + 1}/predictions?token=vibrant-modric")
+        Token.objects.create(token="valid-token", friend=test_user)
+        response = self.client.get(f"http://127.0.0.1:8000/tournaments/{self.t.pk + 1}/predictions?token=valid-token")
         self.assertEqual(response.status_code, 404)

@@ -1,3 +1,5 @@
+import json
+
 from django.http import JsonResponse
 from .models import Token, Tournament, GroupMatchPrediction, KnockOutMatchPrediction, TopScorer
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -44,8 +46,25 @@ def get_user(request_token):
     return Token.objects.get(token=request_token).friend
 
 
+def create_group_match_prediction(t, user, match_dict):
+    match_number = match_dict["match_number"]
+    home_score = match_dict["home_score"]
+    away_score = match_dict["away_score"]
+    return GroupMatchPrediction(tournament=t, friend=user, match_number=match_number, home_score=home_score,
+                                away_score=away_score)
+
+
+def create_ko_match_prediction(t, user, match_dict):
+    match_number = match_dict["match_number"]
+    home_score = match_dict["home_score"]
+    away_score = match_dict["away_score"]
+    home_win = match_dict["home_win"]
+    return KnockOutMatchPrediction(tournament=t, friend=user, match_number=match_number, home_score=home_score,
+                                   away_score=away_score, home_win=home_win)
+
+
 class PredictionsView(View):
-    def get(self, request, uid=1):
+    def get(self, request, uid):
         request_token = request.GET.get('token')
         if not request_token:
             return no_token_error()
@@ -75,7 +94,7 @@ class PredictionsView(View):
 
         return JsonResponse(output)
 
-    def post(self, request, uid=1):
+    def post(self, request, uid):
         request_token = request.GET.get('token')
         if not request_token:
             return no_token_error()
@@ -84,5 +103,20 @@ class PredictionsView(View):
             user = get_user(request_token)
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             return invalid_token()
+
+        try:
+            t = Tournament.objects.get(pk=uid)
+        except ObjectDoesNotExist:
+            return invalid_tournament()
+
+        data = json.loads(request.body.decode("utf-8"))
+        group_match_predictions = [create_group_match_prediction(t, user, match) for match in data["group_matches"]]
+        GroupMatchPrediction.objects.bulk_create(group_match_predictions)
+
+        ko_match_predictions = [create_ko_match_prediction(t, user, match) for match in data["knockout_matches"]]
+        KnockOutMatchPrediction.objects.bulk_create(ko_match_predictions)
+
+        top_scorer = data["top_scorer"].strip().lower()
+        TopScorer(tournament=t, friend=user, name=top_scorer).save()
 
         return JsonResponse(PREDICTIONS)
