@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('tournaments/', include('tournaments.urls')),
+    path('tournaments/<int:uid>/', include('tournaments.urls')),
     path(os.getenv("ADMIN_URL"), admin.site.urls),
 ]
 

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from .models import Token
+from .models import Token, GroupMatchPrediction, Tournament
 
 
 class PredictionsViewTests(TestCase):
@@ -12,14 +12,14 @@ class PredictionsViewTests(TestCase):
         """
         A request to a tournament without a token returns 401
         """
-        response = self.client.get("http://127.0.0.1:8000/tournaments/predictions")
+        response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions")
         self.assertEqual(response.status_code, 401)
 
     def test_invalid_token(self):
         """
         A request to a tournament with an invalid token returns 403
         """
-        response = self.client.get("http://127.0.0.1:8000/tournaments/predictions?token=asd")
+        response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions?token=asd")
         self.assertEqual(response.status_code, 403)
 
     def test_valid_token(self):
@@ -28,7 +28,7 @@ class PredictionsViewTests(TestCase):
         """
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
-        response = self.client.get("http://127.0.0.1:8000/tournaments/predictions?token=vibrant-modric")
+        response = self.client.get("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.json()["group_matches"], list)
         self.assertIsInstance(response.json()["knockout_matches"], list)
@@ -38,8 +38,9 @@ class PredictionsViewTests(TestCase):
         """
         A post request returns 200
         """
+        t = Tournament.objects.create(name="Euro2020")
         test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
         Token.objects.create(token="vibrant-modric", friend=test_user)
-        response = self.client.post("http://127.0.0.1:8000/tournaments/predictions?token=vibrant-modric")
+        response = self.client.post("http://127.0.0.1:8000/tournaments/1/predictions?token=vibrant-modric")
         self.assertEqual(response.status_code, 200)
         # self.assertEqual(response.json(), {"user": "test"})

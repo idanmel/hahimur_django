@@ -16,7 +16,7 @@ def get_user(request_token):
 
 
 class PredictionsView(View):
-    def get(self, request):
+    def get(self, request, uid=1):
         request_token = request.GET.get('token')
         if not request_token:
             return JsonResponse({}, status=401)
@@ -28,7 +28,7 @@ class PredictionsView(View):
 
         return JsonResponse(PREDICTIONS)
 
-    def post(self, request):
+    def post(self, request, uid=1):
         request_token = request.GET.get('token')
         if not request_token:
             return JsonResponse({}, status=401)
