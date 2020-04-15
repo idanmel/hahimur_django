@@ -75,3 +75,6 @@ class TopScorer(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return f"Tournament: {self.tournament}, friend: {self.friend}, Top Scorer: {self.name}"
