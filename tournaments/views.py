@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from .models import Token, Tournament, GroupMatchPrediction, KnockOutMatchPrediction, TopScorer
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views import View
+from django.db.utils import IntegrityError
 
 
 PREDICTIONS = {
@@ -40,6 +41,10 @@ def invalid_token():
 
 def invalid_tournament():
     return JsonResponse({"error": "Invalid tournament"}, status=404)
+
+
+def unprocessable_entity(error):
+    return JsonResponse({"error": error}, status=422)
 
 
 def get_user(request_token):
@@ -111,34 +116,43 @@ class PredictionsView(View):
 
         data = json.loads(request.body.decode("utf-8"))
         for group_match_prediction in data["group_matches"]:
-            GroupMatchPrediction.objects.update_or_create(
-                tournament=t,
-                friend=user,
-                match_number=group_match_prediction["match_number"],
-                defaults={
-                    "home_score": group_match_prediction["home_score"],
-                    "away_score": group_match_prediction["away_score"],
-                }
-            )
+            try:
+                GroupMatchPrediction.objects.update_or_create(
+                    tournament=t,
+                    friend=user,
+                    match_number=group_match_prediction["match_number"],
+                    defaults={
+                        "home_score": group_match_prediction["home_score"],
+                        "away_score": group_match_prediction["away_score"],
+                    }
+                )
+            except IntegrityError as e:
+                return unprocessable_entity(str(e))
 
         for ko_match_prediction in data["knockout_matches"]:
-            KnockOutMatchPrediction.objects.update_or_create(
-                tournament=t,
-                friend=user,
-                match_number=ko_match_prediction["match_number"],
-                defaults={
-                    "home_score": ko_match_prediction["home_score"],
-                    "away_score": ko_match_prediction["away_score"],
-                    "home_win": ko_match_prediction["home_win"],
-                }
-            )
+            try:
+                KnockOutMatchPrediction.objects.update_or_create(
+                    tournament=t,
+                    friend=user,
+                    match_number=ko_match_prediction["match_number"],
+                    defaults={
+                        "home_score": ko_match_prediction["home_score"],
+                        "away_score": ko_match_prediction["away_score"],
+                        "home_win": ko_match_prediction["home_win"],
+                    }
+                )
+            except IntegrityError as e:
+                return unprocessable_entity(str(e))
 
         top_scorer = data["top_scorer"].strip().lower()
-        TopScorer.objects.update_or_create(
-            tournament=t,
-            friend=user,
-            defaults={
-                "name": top_scorer
-            })
+        try:
+            TopScorer.objects.update_or_create(
+                tournament=t,
+                friend=user,
+                defaults={
+                    "name": top_scorer
+                })
+        except IntegrityError as e:
+            return unprocessable_entity(str(e))
 
         return JsonResponse({"success": "Predictions saved"})

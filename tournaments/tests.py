@@ -122,3 +122,19 @@ class PredictionsViewTests(TestCase):
 
         self.assertEqual(ko_match_predictions[0].home_win, True)
         self.assertEqual(top_scorer[0].name, "shearer")
+
+    def test_bad_form_returns_422(self):
+        test_user = User.objects.create_user(username='test', email='test@gmail.com', password='top_secret')
+        Token.objects.create(token="vibrant-modric", friend=test_user)
+        data = {
+            "group_matches": [
+                {"match_number": 1, "home_score": 3, "away_score": None},
+                {"match_number": 2, "home_score": 4, "away_score": 1},
+            ],
+            "knockout_matches": [{"match_number": 3, "home_score": 0, "away_score": 1, "home_win": False}],
+            "top_scorer": "Ronaldo",
+        }
+        response = self.client.post(f"http://127.0.0.1:8000/tournaments/{self.t.pk}/predictions?token=vibrant-modric",
+                                    data=data, content_type="application/json")
+
+        self.assertEqual(response.status_code, 422)
