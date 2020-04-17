@@ -133,4 +133,4 @@ class PredictionsView(View):
         top_scorer = data["top_scorer"].strip().lower()
         TopScorer.objects.update_or_create(tournament=t, friend=user, name=top_scorer)
 
-        return JsonResponse(PREDICTIONS)
+        return JsonResponse({"success": "Predictions saved"})
