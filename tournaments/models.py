@@ -68,6 +68,11 @@ class KnockOutMatchPrediction(models.Model):
         return f"{self.friend}, {self.tournament} {self.match_number}. " \
                f"{self.home_score} - {self.away_score} home_win: {self.home_win}"
 
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['tournament', 'friend', 'match_number'], name='unique_ko_match_prediction')
+        ]
+
 
 class Token(models.Model):
     token = models.CharField(max_length=200)
@@ -84,3 +89,8 @@ class TopScorer(models.Model):
 
     def __str__(self):
         return f"Tournament: {self.tournament}, friend: {self.friend}, Top Scorer: {self.name}"
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['tournament', 'friend'], name='unique_top_scorer')
+        ]
