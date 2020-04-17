@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from .models import Token, Tournament, GroupMatchPrediction, KnockOutMatchPrediction, TopScorer
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views import View
-from django.db.utils import IntegrityError
 
 
 PREDICTIONS = {
@@ -112,7 +111,7 @@ class PredictionsView(View):
 
         data = json.loads(request.body.decode("utf-8"))
         for group_match_prediction in data["group_matches"]:
-            obj, created = GroupMatchPrediction.objects.update_or_create(
+            GroupMatchPrediction.objects.update_or_create(
                 tournament=t,
                 friend=user,
                 match_number=group_match_prediction["match_number"],
@@ -123,7 +122,7 @@ class PredictionsView(View):
             )
 
         for ko_match_prediction in data["knockout_matches"]:
-            obj, created = KnockOutMatchPrediction.objects.update_or_create(
+            KnockOutMatchPrediction.objects.update_or_create(
                 tournament=t,
                 friend=user,
                 match_number=ko_match_prediction["match_number"],
