@@ -22,20 +22,20 @@ like so:
 {
    "group_matches": [
       { 
-        "match_number": Int, 
-        "home_score": Int, 
-        "away_score": Int
+        "match_number": 1, 
+        "home_score": 2, 
+        "away_score": 0
       }
   ],
   "knockout_matches": [
       { 
-        "match_number": Int, 
-        "home_score": Int, 
-        "away_score": Int,
-        "home_win": Boolean
+        "match_number": 2, 
+        "home_score": 1, 
+        "away_score": 1,
+        "home_win": true
       }
   ],
-  "top_scorer": String
+  "top_scorer": "Villa"
  
 }
 ```
