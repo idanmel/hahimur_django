@@ -1,13 +1,14 @@
 from django.contrib import admin
 
-from .models import Tournament, GroupMatch, KnockOutMatch, GroupMatchPrediction, KnockOutMatchPrediction, Token, TopScorer
+from .models import Tournament, Group, Team, MatchInfo, MatchScore, MatchPrediction, Token, TopScorer
 
 admin.site.register([
     Tournament,
-    GroupMatch,
-    KnockOutMatch,
-    GroupMatchPrediction,
-    KnockOutMatchPrediction,
+    Group,
+    Team,
+    MatchInfo,
+    MatchScore,
+    MatchPrediction,
     Token,
     TopScorer
 ])

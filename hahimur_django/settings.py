@@ -131,4 +131,6 @@ CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:8001"
 ]
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 django_heroku.settings(locals())

@@ -7,71 +7,54 @@ class Tournament(models.Model):
     name = models.CharField(max_length=200)
 
     def __str__(self):
-        return f"{self.pk}. {self.name}"
+        return f"{self.name}"
 
 
-class GroupMatch(models.Model):
-    """Only save matches that were already played!"""
+class Group(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    home_score = models.IntegerField()
-    away_score = models.IntegerField()
-    match_number = models.IntegerField()
+    name = models.CharField(max_length=200)
 
     def __str__(self):
-        return f"{self.match_number}. {self.home_score} - {self.away_score}"
-
-    class Meta:
-        verbose_name_plural = "Group matches"
+        return f"{self.tournament} - {self.name}"
 
 
-class KnockOutMatch(models.Model):
-    """Only save matches that were already played!"""
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    home_score = models.IntegerField()
-    away_score = models.IntegerField()
-    match_number = models.IntegerField()
-    home_win = models.BooleanField()
+class Team(models.Model):
+    """A team"""
+    team = models.CharField(max_length=200)
+    flag = models.CharField(max_length=200)
 
     def __str__(self):
-        return f"{self.match_number}. {self.home_score} - {self.away_score} home_win: {self.home_win}"
-
-    class Meta:
-        verbose_name_plural = "Knock Out matches"
+        return f"{self.team}"
 
 
-class GroupMatchPrediction(models.Model):
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+class MatchInfo(models.Model):
+    home_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="home_team")
+    away_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="away_team")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    date = models.DateTimeField()
+    ordering = ['date']
+
+    def __str__(self):
+        return f"{self.group}: {self.home_team} - {self.away_team}"
+
+
+class MatchScore(models.Model):
+    match_info = models.ForeignKey(MatchInfo, on_delete=models.CASCADE)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+
+    def __str__(self):
+        return f"{self.match_info}, {self.home_score} - {self.away_score}"
+
+
+class MatchPrediction(models.Model):
+    match_info = models.ForeignKey(MatchInfo, on_delete=models.CASCADE)
     friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    match_number = models.IntegerField()
     home_score = models.IntegerField()
     away_score = models.IntegerField()
 
     def __str__(self):
-        return f"{self.friend}, {self.tournament} {self.match_number}. " \
-               f"{self.home_score} - {self.away_score}"
-
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=['tournament', 'friend', 'match_number'], name='unique_group_match_prediction')
-        ]
-
-
-class KnockOutMatchPrediction(models.Model):
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    match_number = models.IntegerField()
-    home_score = models.IntegerField()
-    away_score = models.IntegerField()
-    home_win = models.BooleanField()
-
-    def __str__(self):
-        return f"{self.friend}, {self.tournament} {self.match_number}. " \
-               f"{self.home_score} - {self.away_score} home_win: {self.home_win}"
-
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=['tournament', 'friend', 'match_number'], name='unique_ko_match_prediction')
-        ]
+        return f"{self.friend}, {self.match_info}, {self.home_score} - {self.away_score}"
 
 
 class Token(models.Model):
