@@ -1,7 +1,7 @@
 import json
 
 from django.http import JsonResponse
-from .models import Token, Tournament, TopScorer
+from .models import Token, Tournament, TopScorer, Team
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views import View
 from django.db.utils import IntegrityError
@@ -29,6 +29,10 @@ def serialize_knockout_match(ko_match):
         "away_score": ko_match.away_score,
         "home_win": ko_match.home_win,
     }
+
+
+def serialize_team(team):
+    return {"name": team.name, "flag": team.flag}
 
 
 def no_token_error():
@@ -66,6 +70,17 @@ def get_user(request_token):
 #     home_win = match_dict["home_win"]
 #     return KnockOutMatchPrediction(tournament=t, friend=user, match_number=match_number, home_score=home_score,
 #                                    away_score=away_score, home_win=home_win)
+
+class TournamentView(View):
+    def get(self, request):
+        teams = Team.objects.all()
+        euro2020_details = {
+            "euro2020": {
+                "teams":
+                    [serialize_team(team) for team in teams]
+                }
+            }
+        return JsonResponse(euro2020_details)
 
 
 class PredictionsView(View):

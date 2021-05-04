@@ -20,11 +20,11 @@ class Group(models.Model):
 
 class Team(models.Model):
     """A team"""
-    team = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
     flag = models.CharField(max_length=200)
 
     def __str__(self):
-        return f"{self.team}"
+        return f"{self.name}"
 
 
 class MatchInfo(models.Model):
@@ -42,6 +42,7 @@ class MatchScore(models.Model):
     match_info = models.ForeignKey(MatchInfo, on_delete=models.CASCADE)
     home_score = models.IntegerField(null=True)
     away_score = models.IntegerField(null=True)
+    home_win = models.BooleanField(null=True)
 
     def __str__(self):
         return f"{self.match_info}, {self.home_score} - {self.away_score}"
