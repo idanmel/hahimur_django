@@ -1,7 +1,7 @@
 import json
 
 from django.http import JsonResponse
-from .models import Token, Tournament, TopScorer, Team
+from .models import Token, Tournament, TopScorer, Team, MatchInfo
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views import View
 from django.db.utils import IntegrityError
@@ -14,7 +14,7 @@ PREDICTIONS = {
 }
 
 
-def serialize_group_match(ko_match):
+def serialize_group_match(match):
     return {
         "match_number": ko_match.match_number,
         "home_score": ko_match.home_score,
@@ -29,6 +29,23 @@ def serialize_knockout_match(ko_match):
         "away_score": ko_match.away_score,
         "home_win": ko_match.home_win,
     }
+
+
+def serialize_date(date):
+    return date.timestamp()
+
+
+def serialize_match_info(match_info):
+    return {
+        "home_team": serialize_team(match_info.home_team),
+        "away_team": serialize_team(match_info.away_team),
+        "group": serialize_group(match_info.group),
+        "date": serialize_date(match_info.date)
+    }
+
+
+def serialize_group(group):
+    return group.name
 
 
 def serialize_team(team):
@@ -73,11 +90,11 @@ def get_user(request_token):
 
 class TournamentView(View):
     def get(self, request):
-        teams = Team.objects.all()
+        matches_info = MatchInfo.objects.all()
         euro2020_details = {
             "euro2020": {
-                "teams":
-                    [serialize_team(team) for team in teams]
+                "matches_info":
+                    [serialize_match_info(match_info) for match_info in matches_info]
                 }
             }
         return JsonResponse(euro2020_details)
