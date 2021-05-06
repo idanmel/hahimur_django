@@ -14,22 +14,6 @@ PREDICTIONS = {
 }
 
 
-def serialize_group_match(match):
-    return {
-        "match_number": ko_match.match_number,
-        "home_score": ko_match.home_score,
-        "away_score": ko_match.away_score,
-    }
-
-
-def serialize_knockout_match(ko_match):
-    return {
-        "match_number": ko_match.match_number,
-        "home_score": ko_match.home_score,
-        "away_score": ko_match.away_score,
-        "home_win": ko_match.home_win,
-    }
-
 
 def serialize_date(date):
     return date.timestamp()
@@ -39,9 +23,12 @@ def serialize_match_info(match_info):
     return {
         "match_id": match_info.pk,
         "home_team": serialize_team(match_info.home_team),
+        "home_score": None,
         "away_team": serialize_team(match_info.away_team),
+        "away_score": None,
         "group": serialize_group(match_info.group),
-        "date": serialize_date(match_info.date)
+        "date": serialize_date(match_info.date),
+        "home_win": None,
     }
 
 
