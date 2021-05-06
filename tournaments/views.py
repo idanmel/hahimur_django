@@ -27,7 +27,8 @@ def serialize_match_info(match_info):
         "away_team": serialize_team(match_info.away_team),
         "away_score": None,
         "group": serialize_group(match_info.group),
-        "date": serialize_date(match_info.date),
+        "date": "",
+        "time": "",
         "home_win": None,
     }
 
