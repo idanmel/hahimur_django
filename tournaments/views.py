@@ -37,6 +37,7 @@ def serialize_date(date):
 
 def serialize_match_info(match_info):
     return {
+        "match_id": match_info.pk,
         "home_team": serialize_team(match_info.home_team),
         "away_team": serialize_team(match_info.away_team),
         "group": serialize_group(match_info.group),
