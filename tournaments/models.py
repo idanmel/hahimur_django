@@ -26,6 +26,9 @@ class Team(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+DEFAULT_TEAM = Team(name="Euro2020 Eliminations Placeholder",
+                    flag="https://upload.wikimedia.org/wikipedia/en/9/96/UEFA_Euro_2020_Logo.svg")
+
 
 class MatchInfo(models.Model):
     match_id = models.IntegerField(null=True)
@@ -52,9 +55,9 @@ class MatchScore(models.Model):
 class MatchPrediction(models.Model):
     match_info = models.ForeignKey(MatchInfo, on_delete=models.CASCADE)
     friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    home_team_name = models.CharField(max_length=200, default="")
+    home_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="mp_home_team", default=1)
     home_score = models.IntegerField()
-    away_team_name = models.CharField(max_length=200, default="")
+    away_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="mp_away_team", default=1)
     away_score = models.IntegerField()
 
     def __str__(self):
