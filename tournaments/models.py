@@ -28,6 +28,7 @@ class Team(models.Model):
 
 
 class MatchInfo(models.Model):
+    match_id = models.IntegerField(null=True)
     home_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="home_team")
     away_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="away_team")
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
