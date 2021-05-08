@@ -41,6 +41,9 @@ class MatchInfo(models.Model):
     def __str__(self):
         return f"{self.group}: {self.home_team} - {self.away_team}"
 
+    class Meta:
+        verbose_name_plural = "Matches Info"
+
 
 class MatchScore(models.Model):
     match_info = models.ForeignKey(MatchInfo, on_delete=models.CASCADE)
@@ -59,9 +62,15 @@ class MatchPrediction(models.Model):
     home_score = models.IntegerField()
     away_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="mp_away_team", default=1)
     away_score = models.IntegerField()
+    home_win = models.BooleanField(null=True, default=None)
 
     def __str__(self):
         return f"{self.friend}, {self.match_info}, {self.home_score} - {self.away_score}"
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['match_info', 'friend'], name='unique_match_friend_prediction')
+        ]
 
 
 class Token(models.Model):
