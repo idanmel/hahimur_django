@@ -66,7 +66,8 @@ class MatchPrediction(models.Model):
 
     def __str__(self):
         return f"{self.friend}, {self.match_info.group}, " \
-               f"{self.home_team} {self.home_score} - {self.away_team} {self.away_score}. Home win: {self.home_win}"
+               f"Home: {self.home_team} {self.home_score} - Away: {self.away_team} {self.away_score}. " \
+               f"Home win: {self.home_win}"
 
     class Meta:
         constraints = [
