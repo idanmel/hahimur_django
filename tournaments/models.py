@@ -65,7 +65,7 @@ class MatchPrediction(models.Model):
     home_win = models.BooleanField(null=True, default=None)
 
     def __str__(self):
-        return f"{self.friend}, {self.match_info}, {self.home_score} - {self.away_score}"
+        return f"{self.friend}, {self.match_info.group}, {self.home_team} {self.home_score} -  {self.away_team} {self.away_score}"
 
     class Meta:
         constraints = [
