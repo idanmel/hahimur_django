@@ -41,7 +41,9 @@ class MatchInfo(models.Model):
 
 class MatchScore(models.Model):
     match_info = models.ForeignKey(MatchInfo, on_delete=models.CASCADE)
+    home_team_name = models.CharField(max_length=200, default="")
     home_score = models.IntegerField(null=True)
+    away_team_name = models.CharField(max_length=200, default="")
     away_score = models.IntegerField(null=True)
     home_win = models.BooleanField(null=True)
 
