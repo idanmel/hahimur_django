@@ -1,7 +1,7 @@
 import json
 
 from django.http import JsonResponse
-from .models import Token, Tournament, TopScorer, Team, MatchInfo
+from .models import Token, Tournament, TopScorer, Team, MatchInfo, MatchPrediction
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.views import View
 from django.db.utils import IntegrityError
@@ -80,18 +80,74 @@ def get_user(request_token):
 class TournamentView(View):
     def get(self, request):
         matches_info = MatchInfo.objects.all()
+        teams = Team.objects.all()
         euro2020_details = {
             "euro2020": {
                 "matches_info":
-                    [serialize_match_info(match_info) for match_info in matches_info]
-                }
+                    [serialize_match_info(match_info) for match_info in matches_info],
+                "teams":
+                    [serialize_team(team) for team in teams]
+                },
             }
         return JsonResponse(euro2020_details)
+
+
+def save_prediction(user, match):
+    match_info = MatchInfo.objects.get(match_id=match["match_number"])
+
+    home_team = Team.objects.get(name=match["home_team_name"])
+    away_team = Team.objects.get(name=match["away_team_name"])
+    home_score = match["home_score"]
+    away_score = match["away_score"]
+    home_win = match["home_win"]
+    MatchPrediction.objects.update_or_create(
+        match_info=match_info,
+        friend=user,
+        defaults={
+            "home_team": home_team,
+            "home_score": home_score,
+            "away_team": away_team,
+            "away_score": away_score,
+            "home_win": home_win
+        }
+
+    )
 
 
 class PredictionsView(View):
     def get(self):
         return JsonResponse({"cool": "very nice"})
+
+    def post(self, request):
+        request_token = request.GET.get('token')
+        if not request_token:
+            return no_token_error()
+
+        try:
+            user = get_user(request_token)
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": "Invalid token"}, status=403)
+
+        predictions = json.loads(request.body)
+
+        tournament = Tournament.objects.get(pk=1)
+        top_scorer = predictions["top_scorer"].strip().lower()
+        try:
+            TopScorer.objects.update_or_create(
+                tournament=tournament,
+                friend=user,
+                defaults={
+                    "name": top_scorer
+                })
+        except IntegrityError as e:
+            return unprocessable_entity(str(e))
+
+        matches = predictions["group_matches"] + predictions["knockout_matches"]
+        for match in matches:
+            save_prediction(user, match)
+
+        return JsonResponse({"OMG": user.email})
+
 
 # class PredictionsView(View):
 #     def get(self, request, uid):
